@@ -1,7 +1,7 @@
 import random
 from collections import deque, OrderedDict
 
-#       настройки эксперимента
+# настройки эксперимента
 BLOCK_SIZE = 16        # байт в строке кэша
 CACHE_LINES_LIST = [4, 8, 16, 32, 64]
 POLICIES = ["FIFO", "LRU", "Random"]
@@ -9,16 +9,15 @@ HIT_TIME = 1           # такт
 MISS_PENALTY = 50      
 random.seed(0)         # фиксируем начальное значение для воспроизводимости Random
 
-#генераторы обращений
+# генераторы обращений
 def trace_sum_array(n_elems=256, base=0x10000000, elem_size=4):
-    
     return [("R", base + i*elem_size) for i in range(n_elems)]
 
 def trace_bubble_sort(n_elems=64, base=0x20000000, elem_size=4):
     """
-    пузырьковая сортировка (худший случай ):
+    Пузырьковая сортировка (худший случай):
     на каждой итерации читаем A[j], A[j+1], затем снова читаем и пишем их.
-    возвращает список ("R"/"W", addr)
+    Возвращает список ("R"/"W", addr)
     """
     trace = []
     for i in range(n_elems):
@@ -35,11 +34,9 @@ def trace_bubble_sort(n_elems=64, base=0x20000000, elem_size=4):
             trace.append(("W", b))
     return trace
 
-#политики вытеснения
+# политики вытеснения
 def simulate_cache_fifo(trace, cache_lines, block_size):
-    """
-    FIFO: вытесняем самый старый блок
-    """
+    """FIFO: вытесняем самый старый блок"""
     hits = 0
     misses = 0
     q = deque()       # порядок заселения: слева самый старый
@@ -59,9 +56,7 @@ def simulate_cache_fifo(trace, cache_lines, block_size):
     return hits, misses
 
 def simulate_cache_lru(trace, cache_lines, block_size):
-    """
-    LRU: вытесняем наименее недавно использованный блок
-    """
+    """LRU: вытесняем наименее недавно использованный блок"""
     hits = 0
     misses = 0
     od = OrderedDict()  
@@ -79,9 +74,7 @@ def simulate_cache_lru(trace, cache_lines, block_size):
     return hits, misses
 
 def simulate_cache_random(trace, cache_lines, block_size):
-    """
-    Random:  выбираем жертву случайно
-    """
+    """Random: выбираем жертву случайно"""
     hits = 0
     misses = 0
     arr = []     # список блоков в кэше
@@ -101,7 +94,7 @@ def simulate_cache_random(trace, cache_lines, block_size):
             in_cache.add(block)
     return hits, misses
 
-# выбор политики по имени ---
+# выбор политики по имени
 def simulate_cache(trace, cache_lines, block_size, policy):
     if policy == "FIFO":
         return simulate_cache_fifo(trace, cache_lines, block_size)
@@ -112,7 +105,7 @@ def simulate_cache(trace, cache_lines, block_size, policy):
     else:
         raise ValueError(f"Unknown policy: {policy}")
 
-# посчитаем hits/misses, hit_rate и AMAT 
+# оценка результатов
 def evaluate(trace, workload_name):
     total = len(trace)
     rows = []
@@ -133,7 +126,7 @@ def evaluate(trace, workload_name):
             })
     return rows
 
-# печать  таблицы в консоль 
+# вывод таблицы
 def print_table(rows, title):
     print("\n" + title)
     print("-" * len(title))
@@ -145,27 +138,21 @@ def print_table(rows, title):
               f"{r['hit_rate']*100:>8.3f}%  {r['AMAT_cycles']:>8.4f}")
     print()
 
+# основной запуск
 def main():
-    #генерируем данные для тестирования
+    # генерируем данные для тестирования
     sum_trace = trace_sum_array()
     bubble_trace = trace_bubble_sort()
 
-    # проверка длин (должно быть 256 и 12096)
-    # print(len(sum_trace), len(bubble_trace))
-
-    
+    # выполняем расчёт
     sum_rows = evaluate(sum_trace, "sum_array")
     bubble_rows = evaluate(bubble_trace, "bubble_sort")
 
-    
-    sum_only = [r for r in sum_rows if r["workload"] == "sum_array"]
-    bubble_only = [r for r in bubble_rows if r["workload"] == "bubble_sort"]
+    # выводим таблицы в консоль
+    print_table(sum_rows, "SumArray — результаты")
+    print_table(bubble_rows, "BubbleSort — результаты")
 
-    #консольные таблицы 
-    print_table(sum_only, "SumArray — результаты")
-    print_table(bubble_only, "BubbleSort — результаты")
-
-    # Опционально: pandas/matplotlib
+    # сохраняем CSV и строим графики (если есть pandas/matplotlib)
     try:
         import pandas as pd
         import matplotlib.pyplot as plt
@@ -203,5 +190,7 @@ def main():
 
     except Exception as e:
         print(f"Построение графиков пропущено: {e}")
-        if __name__ == "__main__":
-            main()
+
+# точка входа
+if __name__ == "__main__":
+    main()
