@@ -1,1 +1,17 @@
+num_1 = float(input())
+op = input()
+num_2 = float(input())
 
+if op == '+':
+    print(num_1 + num_2)
+elif op == '-':
+    print(num_1 - num_2)
+elif op == '*':
+    print(num_1 * num_2)
+elif op == '/':
+    if b != 0:
+        print(num_1 / num_2)
+    else:
+        print("Ошибка: деление на ноль")
+else:
+    print("Неизвестная операция")
