@@ -1,0 +1,38 @@
+import math
+
+class Calculator:
+    def basic(self, a, op, b):
+        if op == '+':
+            return a + b
+        elif op == '-':
+            return a - b
+        elif op == '*':
+            return a * b
+        elif op == '/':
+            if b != 0:
+                return a / b
+            else:
+                return "Ошибка: деление на ноль"
+        else:
+            return "Неизвестная операция"
+
+    def trig(self, func, x):
+        if func == 'sin':
+            return math.sin(x)
+        elif func == 'cos':
+            return math.cos(x)
+        elif func == 'tg':
+            return math.tan(x)
+        else:
+            return "Неизвестная функция"
+
+calc = Calculator()
+
+a = float(input())
+op = input()
+b = float(input())
+print(calc.basic(a, op, b))
+
+func = input()
+x = float(input())
+print(calc.trig(func, x))
